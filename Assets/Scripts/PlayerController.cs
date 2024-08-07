@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float velocity;
 
     [SerializeField] private bool Perspective2D;
-    [SerializeField] private bool isActive;
+    public bool isActive;
     [SerializeField] private GameObject otherPlayer;
 
     private void Start()
@@ -45,7 +45,7 @@ public class PlayerController : MonoBehaviour
         {
             GetTouchInput();
 
-            if (rightInputID != -1)
+            if (rightInputID != -1 && !Perspective2D)
                 LookAround();
 
             Move();
@@ -124,11 +124,9 @@ public class PlayerController : MonoBehaviour
             movement.x = velocity;
         }
         else
-        {
             movement.y = velocity;
-        }
+
         otherPlayer.transform.position = new Vector3(transform.position.x, otherPlayer.transform.position.y, transform.position.z);
         characterController.Move(movement);
     }
-
 }
