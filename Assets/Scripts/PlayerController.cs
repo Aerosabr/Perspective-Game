@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -23,6 +24,11 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float velocity;
+
+    [SerializeField] private bool Perspective2D;
+    [SerializeField] private bool isActive;
+    [SerializeField] private GameObject otherPlayer;
+
     private void Start()
     {
         leftInputID = -1;
@@ -35,12 +41,15 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        GetTouchInput();
+        if (isActive)
+        {
+            GetTouchInput();
 
-        if (rightInputID != -1)
-            LookAround();
+            if (rightInputID != -1)
+                LookAround();
 
-        Move();
+            Move();
+        }
     }
 
     private void GetTouchInput()
@@ -96,7 +105,7 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        if (characterController.isGrounded && velocity < 0)
+        if (characterController.velocity.x == 0 && velocity < 0)
             velocity = -.05f;
         else
             velocity += gravity * Time.deltaTime;
@@ -107,8 +116,18 @@ public class PlayerController : MonoBehaviour
         else
             movementDirection = moveInput.normalized * moveSpeed * Time.deltaTime;
         Vector3 movement = transform.right * movementDirection.x + transform.forward * movementDirection.y;
-        movement.y = velocity;
-
+        if (Perspective2D)
+        {
+            float temp = movement.z;
+            movement.z = -movement.x;
+            movement.x = temp;
+            movement.x = velocity;
+        }
+        else
+        {
+            movement.y = velocity;
+        }
+        otherPlayer.transform.position = new Vector3(transform.position.x, otherPlayer.transform.position.y, transform.position.z);
         characterController.Move(movement);
     }
 
