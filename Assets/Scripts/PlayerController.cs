@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool Perspective2D;
     public bool isActive;
     [SerializeField] private GameObject otherPlayer;
+    [SerializeField] private float jumpTime;
 
     private void Start()
     {
@@ -67,7 +68,10 @@ public class PlayerController : MonoBehaviour
                         moveTouchStartPosition = t.position;
                     }
                     else if (t.position.x > screenWidth && rightInputID == -1)
+                    {
                         rightInputID = t.fingerId;
+                        jumpTime = Time.time;
+                    }
 
                     break;
                 case TouchPhase.Ended:
@@ -75,8 +79,11 @@ public class PlayerController : MonoBehaviour
                     if (t.fingerId == leftInputID)
                         leftInputID = -1;
                     else if (t.fingerId == rightInputID)
+                    {
                         rightInputID = -1;
-
+                        if (Time.time - jumpTime <= 0.2f)
+                            Jump();
+                    }
                     break;
                 case TouchPhase.Moved:
                     if (t.fingerId == rightInputID)
@@ -95,6 +102,19 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void Jump()
+    {
+        if (Perspective2D)
+        {
+            if (characterController.velocity.x != 0)
+                return;
+        }
+        else if (!characterController.isGrounded)
+            return;
+
+        velocity += .25f;
+    }
+
     private void LookAround()
     {
         cameraPitch = Mathf.Clamp(cameraPitch - lookInput.y, -90f, 90f);
@@ -105,11 +125,6 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        if (characterController.velocity.x == 0 && velocity < 0)
-            velocity = -.05f;
-        else
-            velocity += gravity * Time.deltaTime;
-
         Vector2 movementDirection;
         if (leftInputID == -1)
             movementDirection = Vector2.zero;
@@ -118,15 +133,26 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = transform.right * movementDirection.x + transform.forward * movementDirection.y;
         if (Perspective2D)
         {
+            if (characterController.velocity.x == 0 && velocity < 0)
+                velocity = -.05f;
+            else
+                velocity += gravity * Time.deltaTime;
             float temp = movement.z;
             movement.z = -movement.x;
             movement.x = temp;
             movement.x = velocity;
+            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y + 100, transform.position.z);
         }
         else
+        {
+            if (characterController.velocity.y == 0 && velocity < 0)
+                velocity = -.05f;
+            else
+                velocity += gravity * Time.deltaTime;
             movement.y = velocity;
+            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y - 100, transform.position.z);
+        } 
 
-        otherPlayer.transform.position = new Vector3(transform.position.x, otherPlayer.transform.position.y, transform.position.z);
         characterController.Move(movement);
     }
 }
