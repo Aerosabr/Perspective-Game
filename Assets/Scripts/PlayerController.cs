@@ -112,7 +112,7 @@ public class PlayerController : MonoBehaviour
         else if (!characterController.isGrounded)
             return;
 
-        velocity += .25f;
+        velocity += .35f;
     }
 
     private void LookAround()
@@ -141,7 +141,7 @@ public class PlayerController : MonoBehaviour
             movement.z = -movement.x;
             movement.x = temp;
             movement.x = velocity;
-            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y + 97, transform.position.z);
+            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y + 200, transform.position.z);
         }
         else
         {
@@ -150,7 +150,7 @@ public class PlayerController : MonoBehaviour
             else
                 velocity += gravity * Time.deltaTime;
             movement.y = velocity;
-            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y - 97, transform.position.z);
+            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y - 200, transform.position.z);
         } 
 
         characterController.Move(movement);
