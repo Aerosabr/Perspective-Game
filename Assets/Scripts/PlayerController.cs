@@ -44,12 +44,25 @@ public class PlayerController : MonoBehaviour
     {
         if (isActive)
         {
-            GetTouchInput();
+            if (Perspective2D && transform.position.x < -20)
+            {
+                Vector3 temp = CheckpointManager.instance.GetCheckpoint();
+                transform.position = new Vector3(temp.x, -197, temp.z);
+            }
+            else if (!Perspective2D && transform.position.y < -17)
+            {
+                Vector3 temp = CheckpointManager.instance.GetCheckpoint();
+                transform.position = temp;
+            }
+            else
+            {
+                GetTouchInput();
 
-            if (rightInputID != -1 && !Perspective2D)
-                LookAround();
+                if (rightInputID != -1 && !Perspective2D)
+                    LookAround();
 
-            Move();
+                Move();
+            }            
         }
     }
 
