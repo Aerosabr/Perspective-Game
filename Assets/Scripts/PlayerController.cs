@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
@@ -25,7 +27,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float velocity;
 
-    [SerializeField] private bool Perspective2D;
+    public bool Perspective2D;
     public bool isActive;
     [SerializeField] private GameObject otherPlayer;
     [SerializeField] private float jumpTime;
@@ -42,18 +44,13 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        
         if (isActive)
         {
             if (Perspective2D && transform.position.x < -20)
-            {
-                Vector3 temp = CheckpointManager.instance.GetCheckpoint();
-                transform.position = new Vector3(temp.x, -197, temp.z);
-            }
+                CheckpointManager.instance.GoCheckpoint();
             else if (!Perspective2D && transform.position.y < -17)
-            {
-                Vector3 temp = CheckpointManager.instance.GetCheckpoint();
-                transform.position = temp;
-            }
+                CheckpointManager.instance.GoCheckpoint();
             else
             {
                 GetTouchInput();
@@ -66,11 +63,42 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void SwitchPerspective()
+    {
+        Debug.Log("Pressed");
+        if (Perspective2D)
+            StartCoroutine(CameraMove(Quaternion.Euler(0, 180, 0), new Vector3(0, 0.75f, 0)));
+        else
+            StartCoroutine(CameraMove(Quaternion.Euler(90, 90, 0), new Vector3(0.6f, 20, 0)));
+    }
+
+    private IEnumerator CameraMove(Quaternion rotation, Vector3 position)
+    {
+        Vector3 startPosition = transform.GetChild(0).transform.localPosition;
+        Vector3 targetPosition = position;
+        Quaternion startRotation = transform.GetChild(0).transform.rotation;
+        Quaternion endRotation = rotation;
+        float duration = 2f;
+        float progress = 0f;
+
+        while (progress < 1f)
+        {
+            progress += Time.deltaTime / duration;
+            transform.GetChild(0).transform.localPosition = Vector3.Lerp(startPosition, targetPosition, progress);
+            transform.GetChild(0).transform.rotation = Quaternion.Lerp(startRotation, endRotation, progress);
+            yield return null;
+        }
+
+        Perspective2D = !Perspective2D;
+    }
+
     private void GetTouchInput()
     {
         for (int i = 0; i < Input.touchCount; i++)
         {
             Touch t = Input.GetTouch(i);
+            if (EventSystem.current.IsPointerOverGameObject(t.fingerId))
+                return;
 
             switch (t.phase)
             {
@@ -154,7 +182,7 @@ public class PlayerController : MonoBehaviour
             movement.z = -movement.x;
             movement.x = temp;
             movement.x = velocity;
-            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y + 200, transform.position.z);
+            
         }
         else
         {
@@ -163,7 +191,7 @@ public class PlayerController : MonoBehaviour
             else
                 velocity += gravity * Time.deltaTime;
             movement.y = velocity;
-            otherPlayer.transform.position = new Vector3(transform.position.x, transform.position.y - 200, transform.position.z);
+            
         } 
 
         characterController.Move(movement);
