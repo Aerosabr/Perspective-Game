@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        GetTouchInput();
         if (isActive)
         {
             if (Perspective2D && transform.position.x < -20)
@@ -57,13 +58,11 @@ public class PlayerController : MonoBehaviour
                 CheckpointManager.instance.GoCheckpoint();
             else
             {
-                GetTouchInput();
-
                 if (rightInputID != -1 && !Perspective2D)
                     LookAround();
 
                 Move();
-            }            
+            }
         }
     }
 
@@ -78,6 +77,8 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator CameraMove(Quaternion rotation, Vector3 position)
     {
+        characterController.Move(Vector3.zero);
+        isActive = false;
         Vector3 startPosition = transform.GetChild(0).transform.localPosition;
         Vector3 targetPosition = position;
         Quaternion startRotation = transform.GetChild(0).transform.rotation;
@@ -95,6 +96,7 @@ public class PlayerController : MonoBehaviour
 
         Perspective2D = !Perspective2D;
         StageManager.instance.ChangePerspective(Perspective2D);
+        isActive = true;
     }
 
     private void GetTouchInput()
@@ -127,7 +129,7 @@ public class PlayerController : MonoBehaviour
                     else if (t.fingerId == rightInputID)
                     {
                         rightInputID = -1;
-                        if (Time.time - jumpTime <= 0.2f)
+                        if (Time.time - jumpTime <= 0.2f && lookInput == Vector2.zero)
                             Jump();
                     }
                     break;
