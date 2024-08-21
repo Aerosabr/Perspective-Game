@@ -7,44 +7,48 @@ using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private Transform cameraTransform;
-    [SerializeField] private CharacterController characterController;
+    //Camera Controls
+    private Transform cameraTransform;
+    [SerializeField]
+    private float cameraSensitivity; //Speed at which camera moves around
+    private float cameraPitch; //Angle camera is facing in 1st person view
 
-    [SerializeField] private float cameraSensitivity;
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float moveInputDeadZone;
+    //Character Movement
+    private CharacterController characterController;
+    [SerializeField]
+    private float moveSpeed;
+    private float gravity = -1f;
+    private float velocity; //Vertical movement of player
 
-    [SerializeField] private int leftInputID, rightInputID;
-    [SerializeField] private float screenWidth;
+    //Touchscreen Variables
+    private int leftInputID;
+    private int rightInputID;
+    private float screenWidth;
 
-    [SerializeField] private Vector2 lookInput;
-    [SerializeField] private float cameraPitch;
+    //Right Finger Variables
+    private Vector2 lookInput; //Direction right finger is moving
+    private float jumpTime;
 
-    [SerializeField] private Vector2 moveTouchStartPosition;
-    [SerializeField] private Vector2 moveInput;
-    [SerializeField] private Vector3 moveDirection;
-
-    [SerializeField] private float gravity = -9.81f;
-    [SerializeField] private float velocity;
+    //Left Finger Variables
+    private Vector2 moveTouchStartPosition;
+    private Vector2 moveInput;
+    private Vector3 moveDirection;
 
     public bool Perspective2D;
     public bool isActive;
-    [SerializeField] private GameObject otherPlayer;
-    [SerializeField] private float jumpTime;
 
     private void Start()
     {
+        cameraTransform = transform.GetChild(0);
+        characterController = GetComponent<CharacterController>();
         leftInputID = -1;
         rightInputID = -1;
 
         screenWidth = Screen.width / 2;
-
-        moveInputDeadZone = Mathf.Pow(Screen.height / moveInputDeadZone, 2);
     }
 
     private void Update()
     {
-        
         if (isActive)
         {
             if (Perspective2D && transform.position.x < -20)
@@ -90,6 +94,7 @@ public class PlayerController : MonoBehaviour
         }
 
         Perspective2D = !Perspective2D;
+        StageManager.instance.ChangePerspective(Perspective2D);
     }
 
     private void GetTouchInput()
@@ -153,7 +158,7 @@ public class PlayerController : MonoBehaviour
         else if (!characterController.isGrounded)
             return;
 
-        velocity += .35f;
+        velocity += .3f;
     }
 
     private void LookAround()
@@ -179,7 +184,7 @@ public class PlayerController : MonoBehaviour
             else
                 velocity += gravity * Time.deltaTime;
             float temp = movement.z;
-            movement.z = -movement.x;
+            movement.z = movement.x;
             movement.x = temp;
             movement.x = velocity;
             
